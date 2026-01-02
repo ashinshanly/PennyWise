@@ -2,7 +2,7 @@ import { Categories, Colors, Radius, Spacing, Typography } from '@/constants/Col
 import { Transaction } from '@/hooks/useTransactions';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -11,6 +11,7 @@ import Animated, {
     runOnJS,
     useAnimatedStyle,
     useSharedValue,
+    withDelay,
     withSpring,
     withTiming,
 } from 'react-native-reanimated';
@@ -28,9 +29,20 @@ export default function TransactionItem({ transaction, index, onDelete }: Transa
     const itemHeight = useSharedValue(70);
     const opacity = useSharedValue(1);
     const scale = useSharedValue(1);
+    const entranceOpacity = useSharedValue(0);
+    const entranceTranslate = useSharedValue(20);
 
     const category = Categories[transaction.category] || Categories.other;
     const isIncome = transaction.type === 'income';
+
+    // Run entrance animation
+    useEffect(() => {
+        entranceOpacity.value = withDelay(index * 50, withSpring(1));
+        entranceTranslate.value = withDelay(
+            index * 50,
+            withSpring(0, { damping: 15, stiffness: 100 })
+        );
+    }, []);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -96,18 +108,10 @@ export default function TransactionItem({ transaction, index, onDelete }: Transa
         ],
     }));
 
-    // Entrance animation delay based on index
+    // Entrance animation style
     const entranceStyle = useAnimatedStyle(() => ({
-        opacity: withSpring(1, { delay: index * 50 }),
-        transform: [
-            {
-                translateY: withSpring(0, {
-                    delay: index * 50,
-                    damping: 15,
-                    stiffness: 100,
-                })
-            },
-        ],
+        opacity: entranceOpacity.value,
+        transform: [{ translateY: entranceTranslate.value }],
     }));
 
     return (

@@ -1,31 +1,211 @@
-import { StyleSheet } from 'react-native';
+import BalanceCard from '@/components/BalanceCard';
+import SpendingChart from '@/components/SpendingChart';
+import TransactionItem from '@/components/TransactionItem';
+import { Colors, Spacing, Typography } from '@/constants/Colors';
+import { useTransactions } from '@/hooks/useTransactions';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function HomeScreen() {
+  const {
+    transactions,
+    loading,
+    totals,
+    spendingByCategory,
+    recentTransactions,
+    deleteTransaction,
+    loadTransactions,
+  } = useTransactions();
 
-export default function TabOneScreen() {
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadTransactions();
+    setRefreshing(false);
+  }, [loadTransactions]);
+
+  const handleDelete = useCallback((id: string) => {
+    deleteTransaction(id);
+  }, [deleteTransaction]);
+
+  const today = new Date().toLocaleDateString('en-IN', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
+      >
+        {/* Header */}
+        <Animated.View entering={FadeInDown.delay(100).duration(500)} style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>Good Evening 👋</Text>
+            <Text style={styles.date}>{today}</Text>
+          </View>
+          <View style={styles.notificationButton}>
+            <Ionicons name="notifications-outline" size={24} color={Colors.text} />
+            <View style={styles.notificationDot} />
+          </View>
+        </Animated.View>
+
+        {/* Balance Card */}
+        <BalanceCard
+          balance={totals.balance}
+          income={totals.income}
+          expenses={totals.expenses}
+        />
+
+        {/* Spending Chart */}
+        <SpendingChart spendingByCategory={spendingByCategory} />
+
+        {/* Recent Transactions */}
+        <Animated.View
+          entering={FadeInUp.delay(500).duration(400)}
+          style={styles.sectionHeader}
+        >
+          <Text style={styles.sectionTitle}>Recent Transactions</Text>
+          <Text style={styles.seeAll}>See All</Text>
+        </Animated.View>
+
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading...</Text>
+          </View>
+        ) : recentTransactions.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="receipt-outline" size={48} color={Colors.textMuted} />
+            <Text style={styles.emptyText}>No transactions yet</Text>
+            <Text style={styles.emptySubtext}>Tap + to add your first expense</Text>
+          </View>
+        ) : (
+          <View style={styles.transactionsList}>
+            {recentTransactions.map((transaction, index) => (
+              <TransactionItem
+                key={transaction.id}
+                transaction={transaction}
+                index={index}
+                onDelete={handleDelete}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Bottom spacing for tab bar */}
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: Spacing['2xl'],
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.base,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+  },
+  greeting: {
+    color: Colors.text,
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+  },
+  date: {
+    color: Colors.textMuted,
+    fontSize: Typography.sizes.sm,
+    marginTop: 2,
+  },
+  notificationButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.card,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  notificationDot: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.danger,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.base,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.md,
+  },
+  sectionTitle: {
+    color: Colors.text,
+    fontSize: Typography.sizes.md,
+    fontWeight: Typography.weights.semibold,
+  },
+  seeAll: {
+    color: Colors.primary,
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.medium,
+  },
+  transactionsList: {
+    gap: Spacing.sm,
+  },
+  loadingContainer: {
+    padding: Spacing['2xl'],
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: Colors.textMuted,
+    fontSize: Typography.sizes.base,
+  },
+  emptyContainer: {
+    padding: Spacing['3xl'],
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: Colors.text,
+    fontSize: Typography.sizes.md,
+    fontWeight: Typography.weights.medium,
+    marginTop: Spacing.md,
+  },
+  emptySubtext: {
+    color: Colors.textMuted,
+    fontSize: Typography.sizes.sm,
+    marginTop: Spacing.xs,
+  },
+  bottomSpacer: {
+    height: 100,
   },
 });

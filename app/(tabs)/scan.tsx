@@ -81,7 +81,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     },
 ];
 
-const URL_TEMPLATE = 'expense-tracker://add-from-shortcut?amount=AMOUNT&desc=MERCHANT&type=expense&bank=SENDER';
+const URL_TEMPLATE = 'expense-tracker://add-from-shortcut?sms=MESSAGE&sender=SENDER';
 
 export default function ScanScreen() {
     const [expandedStep, setExpandedStep] = useState<number | null>(null);
@@ -182,7 +182,7 @@ export default function ScanScreen() {
                         <Text style={styles.copiedText}>✓ Copied to clipboard!</Text>
                     )}
                     <Text style={styles.urlHint}>
-                        In Shortcuts, replace AMOUNT, MERCHANT, and SENDER with the corresponding variables from the message.
+                        In Shortcuts, replace MESSAGE with "Shortcut Input" and SENDER with "Sender".
                     </Text>
                 </Animated.View>
 
@@ -249,7 +249,7 @@ export default function ScanScreen() {
 
                 <View style={styles.bottomSpacer} />
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 

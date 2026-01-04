@@ -1,6 +1,6 @@
 import { Categories, CategoryId, Colors, Radius, Spacing, Typography } from '@/constants/Colors';
 import { useTransactions } from '@/hooks/useTransactions';
-import { categorizeTransaction } from '@/utils/categorizer';
+import { categorizeTransaction, parseBankMessage } from '@/utils/categorizer';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -22,6 +22,8 @@ export default function AddFromShortcutScreen() {
         desc?: string;
         type?: string;
         bank?: string;
+        sms?: string;
+        sender?: string;
     }>();
     const { addTransaction, accounts } = useTransactions();
 
@@ -42,28 +44,44 @@ export default function AddFromShortcutScreen() {
 
     const processTransaction = async () => {
         try {
-            // Parse amount
-            const amount = parseFloat(params.amount || '0');
+            let amount = 0;
+            let description = '';
+            let type: 'income' | 'expense' = 'expense';
+            let category: CategoryId = 'other';
+
+            if (params.sms) {
+                // Parse from raw SMS
+                const smsContent = decodeURIComponent(params.sms);
+                console.log('Parsing SMS:', smsContent);
+                const parsed = parseBankMessage(smsContent);
+
+                amount = parsed.amount || 0;
+                description = parsed.description;
+                type = parsed.type;
+                category = parsed.category;
+
+                // Fallback description if parser fails
+                if (!description) description = 'Transaction from SMS';
+            } else {
+                // Legacy: Parse individual params
+                amount = parseFloat(params.amount || '0');
+                description = decodeURIComponent(params.desc || 'Transaction from SMS');
+                type = (params.type === 'income' ? 'income' : 'expense') as 'income' | 'expense';
+                category = type === 'income' ? 'income' : categorizeTransaction(description);
+            }
+
             if (isNaN(amount) || amount <= 0) {
                 setStatus('error');
                 return;
             }
 
-            // Get description
-            const description = decodeURIComponent(params.desc || 'Transaction from SMS');
-
-            // Determine type
-            const type = (params.type === 'income' ? 'income' : 'expense') as 'income' | 'expense';
-
-            // Auto-categorize based on description
-            const category = type === 'income' ? 'income' : categorizeTransaction(description);
-
             // Find matching account
             let accountId = accounts[0]?.id; // Default to first account
             let accountName = accounts[0]?.name;
 
-            if (params.bank) {
-                const bankName = decodeURIComponent(params.bank).toLowerCase();
+            const bankIdentifier = (params.bank || params.sender || '').toLowerCase();
+            if (bankIdentifier) {
+                const bankName = decodeURIComponent(bankIdentifier);
                 const matchedAccount = accounts.find(acc =>
                     acc.name.toLowerCase().includes(bankName) ||
                     bankName.includes(acc.name.toLowerCase())

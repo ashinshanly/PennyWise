@@ -1,7 +1,7 @@
 import BalanceCard from '@/components/BalanceCard';
 import SpendingChart from '@/components/SpendingChart';
 import TransactionItem from '@/components/TransactionItem';
-import { Colors, Spacing, Typography } from '@/constants/Colors';
+import { Colors, Radius, Spacing, Typography } from '@/constants/Colors';
 import { CURRENCIES, useTransactions } from '@/hooks/useTransactions';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -24,6 +24,7 @@ export default function HomeScreen() {
     currencySymbol,
     currency,
     setCurrency,
+    accounts,
   } = useTransactions();
 
   const [showCurrencyModal, setShowCurrencyModal] = React.useState(false);
@@ -79,13 +80,13 @@ export default function HomeScreen() {
               style={styles.iconButton}
               onPress={() => setShowCurrencyModal(true)}
             >
-              <Text style={{ fontSize: 18 }}>{currencySymbol}</Text>
+              <Text style={{ fontSize: 20, color: Colors.text }}>{currencySymbol}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => router.push('/scan')}
             >
-              <Ionicons name="scan-outline" size={24} color={Colors.text} />
+              <Ionicons name="chatbubble-ellipses-outline" size={24} color={Colors.text} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.notificationButton}
@@ -97,13 +98,34 @@ export default function HomeScreen() {
           </View>
         </Animated.View>
 
-        {/* Balance Card */}
-        <BalanceCard
-          balance={totals.balance}
-          income={totals.income}
-          expenses={totals.expenses}
-          currencySymbol={currencySymbol}
-        />
+        {/* Setup Guide or Balance Card */}
+        {accounts.length === 0 ? (
+          <Animated.View entering={FadeInDown.delay(200).duration(500)} style={styles.setupCard}>
+            <View style={styles.setupIconContainer}>
+              <Ionicons name="wallet-outline" size={32} color={Colors.primary} />
+            </View>
+            <View style={styles.setupContent}>
+              <Text style={styles.setupTitle}>Setup Your Account</Text>
+              <Text style={styles.setupDescription}>
+                Create a bank account or wallet to start tracking your expenses automatically.
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.setupButton}
+              onPress={() => router.push('/accounts')}
+            >
+              <Text style={styles.setupButtonText}>Add Account</Text>
+              <Ionicons name="arrow-forward" size={16} color={Colors.text} />
+            </TouchableOpacity>
+          </Animated.View>
+        ) : (
+          <BalanceCard
+            balance={totals.balance}
+            income={totals.income}
+            expenses={totals.expenses}
+            currencySymbol={currencySymbol}
+          />
+        )}
 
         {/* Spending Chart */}
         <SpendingChart spendingByCategory={spendingByCategory} />
@@ -310,5 +332,52 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 100,
+  },
+  setupCard: {
+    backgroundColor: Colors.card,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    marginHorizontal: Spacing.base,
+    marginTop: Spacing.md,
+    gap: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  setupIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.primary + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+  },
+  setupContent: {
+    gap: Spacing.xs,
+  },
+  setupTitle: {
+    color: Colors.text,
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+  },
+  setupDescription: {
+    color: Colors.textSecondary,
+    fontSize: Typography.sizes.sm,
+    lineHeight: 20,
+  },
+  setupButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.lg,
+    marginTop: Spacing.sm,
+  },
+  setupButtonText: {
+    color: Colors.text,
+    fontSize: Typography.sizes.base,
+    fontWeight: Typography.weights.semibold,
   },
 });

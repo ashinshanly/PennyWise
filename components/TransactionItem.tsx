@@ -19,12 +19,13 @@ import Animated, {
 interface TransactionItemProps {
     transaction: Transaction;
     index: number;
+    currencySymbol: string;
     onDelete?: (id: string) => void;
 }
 
 const SWIPE_THRESHOLD = -80;
 
-export default function TransactionItem({ transaction, index, onDelete }: TransactionItemProps) {
+export default function TransactionItem({ transaction, index, onDelete, currencySymbol }: TransactionItemProps) {
     const translateX = useSharedValue(0);
     const itemHeight = useSharedValue(70);
     const opacity = useSharedValue(1);
@@ -59,7 +60,7 @@ export default function TransactionItem({ transaction, index, onDelete }: Transa
     };
 
     const formatAmount = (amount: number) => {
-        return `${isIncome ? '+' : '-'}₹${amount.toLocaleString('en-IN')}`;
+        return `${isIncome ? '+' : '-'}${currencySymbol}${amount.toLocaleString('en-IN')}`;
     };
 
     const handleDelete = () => {

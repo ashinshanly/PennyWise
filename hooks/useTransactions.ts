@@ -30,9 +30,22 @@ export interface Notification {
     type: 'info' | 'warning' | 'success';
 }
 
+export const CURRENCIES = {
+    INR: { symbol: '₹', name: 'Indian Rupee', locale: 'en-IN' },
+    USD: { symbol: '$', name: 'US Dollar', locale: 'en-US' },
+    EUR: { symbol: '€', name: 'Euro', locale: 'de-DE' },
+    GBP: { symbol: '£', name: 'British Pound', locale: 'en-GB' },
+    JPY: { symbol: '¥', name: 'Japanese Yen', locale: 'ja-JP' },
+};
+
+export type CurrencyCode = keyof typeof CURRENCIES;
+
+const STORAGE_KEY = '@expense_tracker_transactions';
+const ACCOUNTS_KEY = '@expense_tracker_accounts';
 const STORAGE_KEY = '@expense_tracker_transactions';
 const ACCOUNTS_KEY = '@expense_tracker_accounts';
 const NOTIFICATIONS_KEY = '@expense_tracker_notifications';
+const CURRENCY_KEY = '@expense_tracker_currency';
 
 const DEFAULT_ACCOUNTS: Account[] = [];
 
@@ -40,6 +53,7 @@ export function useTransactions() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [currency, setCurrencyState] = useState<CurrencyCode>('INR');
     const [loading, setLoading] = useState(true);
 
     // Load transactions from storage
@@ -49,6 +63,11 @@ export function useTransactions() {
             const storedAccounts = await AsyncStorage.getItem(ACCOUNTS_KEY);
 
             const storedNotifications = await AsyncStorage.getItem(NOTIFICATIONS_KEY);
+            const storedCurrency = await AsyncStorage.getItem(CURRENCY_KEY);
+
+            if (storedCurrency && CURRENCIES[storedCurrency as CurrencyCode]) {
+                setCurrencyState(storedCurrency as CurrencyCode);
+            }
 
             if (storedTransactions) {
                 setTransactions(JSON.parse(storedTransactions));
@@ -141,6 +160,15 @@ export function useTransactions() {
             await AsyncStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(newNotifications));
         } catch (error) {
             console.error('Error saving notifications:', error);
+        }
+    }, []);
+
+    const setCurrency = useCallback(async (code: CurrencyCode) => {
+        try {
+            setCurrencyState(code);
+            await AsyncStorage.setItem(CURRENCY_KEY, code);
+        } catch (error) {
+            console.error('Error saving currency:', error);
         }
     }, []);
 
@@ -316,5 +344,8 @@ export function useTransactions() {
         updateAccount,
         deleteAccount,
         clearAllData,
+        currency,
+        setCurrency,
+        currencySymbol: CURRENCIES[currency].symbol,
     };
 }

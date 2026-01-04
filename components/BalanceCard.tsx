@@ -4,19 +4,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
-    Easing,
     interpolate,
     useAnimatedStyle,
     useSharedValue,
     withDelay,
     withSpring,
-    withTiming,
+    withTiming
 } from 'react-native-reanimated';
 
 interface BalanceCardProps {
     balance: number;
     income: number;
     expenses: number;
+    currencySymbol: string;
 }
 
 // Animated number component
@@ -25,24 +25,7 @@ const AnimatedNumber: React.FC<{ value: number; prefix?: string; delay?: number 
     prefix = '₹',
     delay = 0,
 }) => {
-    const animatedValue = useSharedValue(0);
-
-    useEffect(() => {
-        animatedValue.value = withDelay(
-            delay,
-            withTiming(value, { duration: 1200, easing: Easing.out(Easing.cubic) })
-        );
-    }, [value]);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: interpolate(animatedValue.value, [0, value * 0.1, value], [0.5, 0.8, 1]),
-    }));
-
-    // For display, we'll use the actual value with formatting
-    const formatNumber = (num: number) => {
-        return num.toLocaleString('en-IN', { maximumFractionDigits: 0 });
-    };
-
+    // ... logic
     return (
         <Animated.Text style={[styles.balanceAmount, animatedStyle]}>
             {prefix}{formatNumber(value)}
@@ -50,7 +33,7 @@ const AnimatedNumber: React.FC<{ value: number; prefix?: string; delay?: number 
     );
 };
 
-export default function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
+export default function BalanceCard({ balance, income, expenses, currencySymbol }: BalanceCardProps) {
     const cardScale = useSharedValue(0.9);
     const cardOpacity = useSharedValue(0);
     const incomeTranslate = useSharedValue(30);
@@ -97,7 +80,7 @@ export default function BalanceCard({ balance, income, expenses }: BalanceCardPr
                     {/* Balance Section */}
                     <View style={styles.balanceSection}>
                         <Text style={styles.balanceLabel}>Total Balance</Text>
-                        <AnimatedNumber value={balance} delay={200} />
+                        <AnimatedNumber value={balance} prefix={currencySymbol} delay={200} />
                     </View>
 
                     {/* Income/Expense Row */}
@@ -109,7 +92,7 @@ export default function BalanceCard({ balance, income, expenses }: BalanceCardPr
                             <View>
                                 <Text style={styles.statLabel}>Income</Text>
                                 <Text style={[styles.statAmount, styles.incomeColor]}>
-                                    ₹{formatCurrency(income)}
+                                    {currencySymbol}{formatCurrency(income)}
                                 </Text>
                             </View>
                         </Animated.View>
@@ -121,7 +104,7 @@ export default function BalanceCard({ balance, income, expenses }: BalanceCardPr
                             <View>
                                 <Text style={styles.statLabel}>Expenses</Text>
                                 <Text style={[styles.statAmount, styles.expenseColor]}>
-                                    ₹{formatCurrency(expenses)}
+                                    {currencySymbol}{formatCurrency(expenses)}
                                 </Text>
                             </View>
                         </Animated.View>

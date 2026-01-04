@@ -21,7 +21,13 @@ export default function HomeScreen() {
     recentTransactions,
     deleteTransaction,
     loadTransactions,
+    currencySymbol,
+    currency,
+    setCurrency,
+    CURRENCIES,
   } = useTransactions();
+
+  const [showCurrencyModal, setShowCurrencyModal] = React.useState(false);
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -72,6 +78,12 @@ export default function HomeScreen() {
           <View style={styles.headerRight}>
             <TouchableOpacity
               style={styles.iconButton}
+              onPress={() => setShowCurrencyModal(true)}
+            >
+              <Text style={{ fontSize: 18 }}>{currencySymbol}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconButton}
               onPress={() => router.push('/scan')}
             >
               <Ionicons name="scan-outline" size={24} color={Colors.text} />
@@ -91,6 +103,7 @@ export default function HomeScreen() {
           balance={totals.balance}
           income={totals.income}
           expenses={totals.expenses}
+          currencySymbol={currencySymbol}
         />
 
         {/* Spending Chart */}
@@ -123,6 +136,7 @@ export default function HomeScreen() {
                 transaction={transaction}
                 index={index}
                 onDelete={handleDelete}
+                currencySymbol={currencySymbol}
               />
             ))}
           </View>
@@ -131,6 +145,62 @@ export default function HomeScreen() {
         {/* Bottom spacing for tab bar */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Currency Selection Modal */}
+      {showCurrencyModal && (
+        <View style={StyleSheet.absoluteFill}>
+          <TouchableOpacity
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+            activeOpacity={1}
+            onPress={() => setShowCurrencyModal(false)}
+          >
+            <View style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: Colors.card,
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              padding: 24,
+              paddingBottom: 40
+            }}>
+              <Text style={{
+                color: Colors.text,
+                fontSize: 20,
+                fontWeight: 'bold',
+                marginBottom: 16
+              }}>Select Currency</Text>
+              {Object.keys(CURRENCIES).map((code) => (
+                <TouchableOpacity
+                  key={code}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 12,
+                    borderBottomWidth: 1,
+                    borderBottomColor: Colors.border
+                  }}
+                  onPress={() => {
+                    setCurrency(code as any);
+                    setShowCurrencyModal(false);
+                  }}
+                >
+                  <Text style={{ fontSize: 24, width: 40, color: Colors.text }}>
+                    {CURRENCIES[code as keyof typeof CURRENCIES].symbol}
+                  </Text>
+                  <Text style={{ fontSize: 16, color: Colors.text, flex: 1 }}>
+                    {CURRENCIES[code as keyof typeof CURRENCIES].name}
+                  </Text>
+                  {currency === code && (
+                    <Ionicons name="checkmark" size={24} color={Colors.primary} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

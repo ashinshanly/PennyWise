@@ -65,7 +65,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     {
         id: 5,
         title: 'Add Open URL Action',
-        description: 'Search for "Open URLs" action and add it after the URL action.',
+        description: 'Search for "Open URL" action and add it after the URL action.',
         icon: 'open-outline',
     },
     {
@@ -81,7 +81,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     },
 ];
 
-const URL_TEMPLATE = 'expense-tracker://add-from-shortcut?sms=MESSAGE&sender=SENDER';
+const URL_TEMPLATE = 'expense-tracker://add-from-shortcut?sms=MESSAGE';
 
 export default function ScanScreen() {
     const [expandedStep, setExpandedStep] = useState<number | null>(null);
@@ -182,7 +182,7 @@ export default function ScanScreen() {
                         <Text style={styles.copiedText}>✓ Copied to clipboard!</Text>
                     )}
                     <Text style={styles.urlHint}>
-                        In Shortcuts, replace MESSAGE with "Shortcut Input" and SENDER with "Sender".
+                        In Shortcuts, tap on "MESSAGE" and select "Shortcut Input" from the keyboard bar.
                     </Text>
                 </Animated.View>
 
@@ -243,7 +243,7 @@ export default function ScanScreen() {
                 <Animated.View entering={FadeInDown.delay(600).duration(400)} style={styles.tipCard}>
                     <Ionicons name="information-circle" size={20} color={Colors.primary} />
                     <Text style={styles.tipText}>
-                        For best results, add all your bank senders to the same automation so all transactions are tracked automatically.
+                        Pro Tip: Add multiple banks to the "Sender" list in Step 3 to track all your accounts with one automation.
                     </Text>
                 </Animated.View>
 

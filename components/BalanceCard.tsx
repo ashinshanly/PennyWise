@@ -25,7 +25,24 @@ const AnimatedNumber: React.FC<{ value: number; prefix?: string; delay?: number 
     prefix = '₹',
     delay = 0,
 }) => {
-    // ... logic
+    const animatedValue = useSharedValue(0);
+
+    useEffect(() => {
+        animatedValue.value = withDelay(
+            delay,
+            withTiming(value, { duration: 1200, easing: Easing.out(Easing.cubic) })
+        );
+    }, [value]);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        opacity: interpolate(animatedValue.value, [0, value * 0.1, value], [0.5, 0.8, 1]),
+    }));
+
+    // For display, we'll use the actual value with formatting
+    const formatNumber = (num: number) => {
+        return num.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    };
+
     return (
         <Animated.Text style={[styles.balanceAmount, animatedStyle]}>
             {prefix}{formatNumber(value)}

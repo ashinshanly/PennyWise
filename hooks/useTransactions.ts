@@ -42,8 +42,6 @@ export type CurrencyCode = keyof typeof CURRENCIES;
 
 const STORAGE_KEY = '@expense_tracker_transactions';
 const ACCOUNTS_KEY = '@expense_tracker_accounts';
-const STORAGE_KEY = '@expense_tracker_transactions';
-const ACCOUNTS_KEY = '@expense_tracker_accounts';
 const NOTIFICATIONS_KEY = '@expense_tracker_notifications';
 const CURRENCY_KEY = '@expense_tracker_currency';
 

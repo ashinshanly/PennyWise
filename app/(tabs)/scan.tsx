@@ -1,7 +1,9 @@
 import { Colors, Radius, Spacing, Typography } from '@/constants/Colors';
+import { useTransactions } from '@/hooks/useTransactions';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -84,6 +86,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 const URL_TEMPLATE = 'expense-tracker://add-from-shortcut?sms=MESSAGE';
 
 export default function ScanScreen() {
+    const router = useRouter();
+    const { isPro } = useTransactions();
     const [expandedStep, setExpandedStep] = useState<number | null>(null);
     const [copiedUrl, setCopiedUrl] = useState(false);
 
@@ -126,14 +130,15 @@ export default function ScanScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 {/* Header */}
-                <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
+                <Animated.View entering={FadeInDown.duration(400)} style={styles.header}
+                >
                     <Text style={styles.title}>Auto-Track Expenses</Text>
                     <Text style={styles.subtitle}>
                         Set up iOS Shortcuts to automatically import transactions from bank SMS
                     </Text>
                 </Animated.View>
 
-                {/* How It Works Card */}
+                {/* How It Works Card - Visible to ALL as a teaser */}
                 <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.howItWorksCard}>
                     <View style={styles.howItWorksHeader}>
                         <Ionicons name="bulb" size={24} color={Colors.warning} />
@@ -163,91 +168,112 @@ export default function ScanScreen() {
                     </View>
                 </Animated.View>
 
-                {/* URL Template */}
-                <Animated.View entering={FadeInDown.delay(200).duration(400)} style={styles.urlCard}>
-                    <Text style={styles.urlLabel}>URL Template (Step 4)</Text>
-                    <View style={styles.urlContainer}>
-                        <Text style={styles.urlText} numberOfLines={2}>
-                            {URL_TEMPLATE}
+                {!isPro ? (
+                    <Animated.View entering={FadeInDown.delay(200).duration(500)} style={styles.lockContainer}>
+                        <View style={styles.lockIconContainer}>
+                            <Ionicons name="lock-closed" size={48} color={Colors.primary} />
+                        </View>
+                        <Text style={styles.lockTitle}>Premium Feature</Text>
+                        <Text style={styles.lockDesc}>
+                            Automated SMS tracking is available exclusively for Pro members.
+                            Upgrade now to track expenses without lifting a finger.
                         </Text>
-                        <TouchableOpacity style={styles.copyButton} onPress={handleCopyUrl}>
-                            <Ionicons
-                                name={copiedUrl ? 'checkmark' : 'copy-outline'}
-                                size={20}
-                                color={copiedUrl ? Colors.success : Colors.text}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    {copiedUrl && (
-                        <Text style={styles.copiedText}>✓ Copied to clipboard!</Text>
-                    )}
-                    <Text style={styles.urlHint}>
-                        In Shortcuts, tap on "MESSAGE" and select "Shortcut Input" from the keyboard bar.
-                    </Text>
-                </Animated.View>
-
-                {/* Tutorial Steps */}
-                <Animated.View entering={FadeInDown.delay(300).duration(400)} style={styles.stepsSection}>
-                    <Text style={styles.sectionTitle}>Setup Guide</Text>
-
-                    {TUTORIAL_STEPS.map((step, index) => (
-                        <Animated.View
-                            key={step.id}
-                            entering={FadeInRight.delay(300 + index * 50).duration(300)}
+                        <TouchableOpacity
+                            style={styles.upgradeButton}
+                            onPress={() => router.push('/subscription')}
                         >
-                            <TouchableOpacity
-                                style={[
-                                    styles.stepCard,
-                                    expandedStep === step.id && styles.stepCardExpanded,
-                                ]}
-                                onPress={() => toggleStep(step.id)}
-                                activeOpacity={0.7}
-                            >
-                                <View style={styles.stepHeader}>
-                                    <View style={styles.stepNumber}>
-                                        <Text style={styles.stepNumberText}>{step.id}</Text>
-                                    </View>
-                                    <View style={styles.stepContent}>
-                                        <Text style={styles.stepTitle}>{step.title}</Text>
-                                        <Text style={styles.stepDescription}>{step.description}</Text>
-                                    </View>
-                                    <View style={styles.stepIcon}>
-                                        <Ionicons name={step.icon} size={24} color={Colors.primary} />
-                                    </View>
-                                </View>
+                            <Text style={styles.upgradeButtonText}>Unlock for ₹19/mo</Text>
+                        </TouchableOpacity>
+                    </Animated.View>
+                ) : (
+                    <>
+                        {/* URL Template */}
+                        <Animated.View entering={FadeInDown.delay(200).duration(400)} style={styles.urlCard}>
+                            <Text style={styles.urlLabel}>URL Template (Step 4)</Text>
+                            <View style={styles.urlContainer}>
+                                <Text style={styles.urlText} numberOfLines={2}>
+                                    {URL_TEMPLATE}
+                                </Text>
+                                <TouchableOpacity style={styles.copyButton} onPress={handleCopyUrl}>
+                                    <Ionicons
+                                        name={copiedUrl ? 'checkmark' : 'copy-outline'}
+                                        size={20}
+                                        color={copiedUrl ? Colors.success : Colors.text}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            {copiedUrl && (
+                                <Text style={styles.copiedText}>✓ Copied to clipboard!</Text>
+                            )}
+                            <Text style={styles.urlHint}>
+                                In Shortcuts, tap on "MESSAGE" and select "Shortcut Input" from the keyboard bar.
+                            </Text>
+                        </Animated.View>
 
-                                {expandedStep === step.id && step.details && (
-                                    <Animated.View entering={FadeIn.duration(200)} style={styles.stepDetails}>
-                                        {step.details.map((detail, i) => (
-                                            <View key={i} style={styles.detailRow}>
-                                                <Ionicons name="checkmark-circle" size={16} color={Colors.success} />
-                                                <Text style={styles.detailText}>{detail}</Text>
+                        {/* Tutorial Steps */}
+                        <Animated.View entering={FadeInDown.delay(300).duration(400)} style={styles.stepsSection}>
+                            <Text style={styles.sectionTitle}>Setup Guide</Text>
+
+                            {TUTORIAL_STEPS.map((step, index) => (
+                                <Animated.View
+                                    key={step.id}
+                                    entering={FadeInRight.delay(300 + index * 50).duration(300)}
+                                >
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.stepCard,
+                                            expandedStep === step.id && styles.stepCardExpanded,
+                                        ]}
+                                        onPress={() => toggleStep(step.id)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={styles.stepHeader}>
+                                            <View style={styles.stepNumber}>
+                                                <Text style={styles.stepNumberText}>{step.id}</Text>
                                             </View>
-                                        ))}
-                                    </Animated.View>
-                                )}
+                                            <View style={styles.stepContent}>
+                                                <Text style={styles.stepTitle}>{step.title}</Text>
+                                                <Text style={styles.stepDescription}>{step.description}</Text>
+                                            </View>
+                                            <View style={styles.stepIcon}>
+                                                <Ionicons name={step.icon} size={24} color={Colors.primary} />
+                                            </View>
+                                        </View>
+
+                                        {expandedStep === step.id && step.details && (
+                                            <Animated.View entering={FadeIn.duration(200)} style={styles.stepDetails}>
+                                                {step.details.map((detail, i) => (
+                                                    <View key={i} style={styles.detailRow}>
+                                                        <Ionicons name="checkmark-circle" size={16} color={Colors.success} />
+                                                        <Text style={styles.detailText}>{detail}</Text>
+                                                    </View>
+                                                ))}
+                                            </Animated.View>
+                                        )}
+                                    </TouchableOpacity>
+                                </Animated.View>
+                            ))}
+                        </Animated.View>
+
+                        {/* Open Shortcuts Button */}
+                        <Animated.View entering={FadeInDown.delay(500).duration(400)}>
+                            <TouchableOpacity style={styles.openButton} onPress={handleOpenShortcuts}>
+                                <Ionicons name="apps" size={22} color={Colors.text} />
+                                <Text style={styles.openButtonText}>Open Shortcuts App</Text>
                             </TouchableOpacity>
                         </Animated.View>
-                    ))}
-                </Animated.View>
 
-                {/* Open Shortcuts Button */}
-                <Animated.View entering={FadeInDown.delay(500).duration(400)}>
-                    <TouchableOpacity style={styles.openButton} onPress={handleOpenShortcuts}>
-                        <Ionicons name="apps" size={22} color={Colors.text} />
-                        <Text style={styles.openButtonText}>Open Shortcuts App</Text>
-                    </TouchableOpacity>
-                </Animated.View>
+                        {/* Tip Card */}
+                        <Animated.View entering={FadeInDown.delay(600).duration(400)} style={styles.tipCard}>
+                            <Ionicons name="information-circle" size={20} color={Colors.primary} />
+                            <Text style={styles.tipText}>
+                                Pro Tip: Add multiple banks to the "Sender" list in Step 3 to track all your accounts with one automation.
+                            </Text>
+                        </Animated.View>
 
-                {/* Tip Card */}
-                <Animated.View entering={FadeInDown.delay(600).duration(400)} style={styles.tipCard}>
-                    <Ionicons name="information-circle" size={20} color={Colors.primary} />
-                    <Text style={styles.tipText}>
-                        Pro Tip: Add multiple banks to the "Sender" list in Step 3 to track all your accounts with one automation.
-                    </Text>
-                </Animated.View>
-
-                <View style={styles.bottomSpacer} />
+                        <View style={styles.bottomSpacer} />
+                    </>
+                )}
             </ScrollView>
         </SafeAreaView >
     );
@@ -459,5 +485,45 @@ const styles = StyleSheet.create({
     },
     bottomSpacer: {
         height: 100,
+    },
+    lockContainer: {
+        alignItems: 'center',
+        backgroundColor: Colors.card,
+        padding: Spacing['2xl'],
+        borderRadius: Radius.xl,
+        marginTop: Spacing.xl,
+        gap: Spacing.md,
+    },
+    lockIconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: Colors.primary + '20',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: Spacing.sm,
+    },
+    lockTitle: {
+        color: Colors.text,
+        fontSize: Typography.sizes.xl,
+        fontWeight: Typography.weights.bold,
+    },
+    lockDesc: {
+        color: Colors.textSecondary,
+        fontSize: Typography.sizes.base,
+        textAlign: 'center',
+        lineHeight: 22,
+    },
+    upgradeButton: {
+        backgroundColor: Colors.primary,
+        paddingHorizontal: Spacing.xl,
+        paddingVertical: Spacing.md,
+        borderRadius: Radius.lg,
+        marginTop: Spacing.md,
+    },
+    upgradeButtonText: {
+        color: '#fff',
+        fontSize: Typography.sizes.lg,
+        fontWeight: Typography.weights.bold,
     },
 });

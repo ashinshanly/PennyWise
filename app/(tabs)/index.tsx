@@ -25,6 +25,7 @@ export default function HomeScreen() {
     currency,
     setCurrency,
     accounts,
+    isPro,
   } = useTransactions();
 
   const [showCurrencyModal, setShowCurrencyModal] = React.useState(false);
@@ -97,6 +98,27 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </Animated.View>
+
+        {/* Pro Banner (if not pro) */}
+        {!isPro && (
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => router.push('/subscription')}
+          >
+            <Animated.View entering={FadeInDown.delay(150).duration(500)} style={styles.proBanner}>
+              <View style={styles.proContent}>
+                <View style={styles.proIcon}>
+                  <Ionicons name="diamond" size={20} color="#FFD700" />
+                </View>
+                <View>
+                  <Text style={styles.proTitle}>Upgrade to Pro</Text>
+                  <Text style={styles.proSubtitle}>Automate tracking for ₹19/mo</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            </Animated.View>
+          </TouchableOpacity>
+        )}
 
         {/* Setup Guide or Balance Card */}
         {accounts.length === 0 ? (
@@ -332,6 +354,40 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 100,
+  },
+  proBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.card,
+    marginHorizontal: Spacing.base,
+    marginTop: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: '#FFD700' + '40',
+  },
+  proContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  proIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.full,
+    backgroundColor: '#FFD700' + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  proTitle: {
+    color: Colors.text,
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.bold,
+  },
+  proSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: Typography.sizes.xs,
   },
   setupCard: {
     backgroundColor: Colors.card,

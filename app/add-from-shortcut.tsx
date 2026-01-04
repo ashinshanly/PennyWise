@@ -1,11 +1,11 @@
-import { Categories, CategoryId, Colors, Radius, Spacing, Typography } from '@/constants/Colors';
+import { Categories, CategoryId, Colors } from '@/constants/Colors';
 import { useTransactions } from '@/hooks/useTransactions';
 import { categorizeTransaction, parseBankMessage } from '@/utils/categorizer';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Animated, { BounceIn, FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,9 +25,9 @@ export default function AddFromShortcutScreen() {
         sms?: string;
         sender?: string;
     }>();
-    const { addTransaction, accounts } = useTransactions();
+    const { addTransaction, accounts, isPro } = useTransactions();
 
-    const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
+    const [status, setStatus] = useState<'processing' | 'success' | 'error' | 'premium_required'>('processing');
     const [transactionDetails, setTransactionDetails] = useState<{
         amount: number;
         description: string;
@@ -37,10 +37,15 @@ export default function AddFromShortcutScreen() {
     } | null>(null);
 
     useEffect(() => {
+        if (!isPro) {
+            setStatus('premium_required');
+            return;
+        }
+
         if (accounts.length > 0) {
             processTransaction();
         }
-    }, [accounts]);
+    }, [accounts, isPro]);
 
     const processTransaction = async () => {
         try {
@@ -220,108 +225,35 @@ export default function AddFromShortcutScreen() {
                         </TouchableOpacity>
                     </Animated.View>
                 )}
+
+                {status === 'premium_required' && (
+                    <Animated.View entering={FadeIn} style={styles.statusContainer}>
+                        <View style={[styles.errorIcon, { backgroundColor: '#FFD700' + '20', padding: 20, borderRadius: 50 }]}>
+                            <Ionicons name="diamond" size={60} color="#FFD700" />
+                        </View>
+                        <Text style={styles.statusTitle}>Premium Feature</Text>
+                        <Text style={styles.statusText}>
+                            Automated SMS tracking is a Pro feature. Please upgrade to continue.
+                        </Text>
+
+                        <TouchableOpacity
+                            style={[styles.retryButton, { backgroundColor: Colors.primary }]}
+                            onPress={() => router.push('/subscription')}
+                        >
+                            <Text style={styles.retryButtonText}>Upgrade Now</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={{ marginTop: 20 }}
+                            onPress={() => router.replace('/')}
+                        >
+                            <Text style={{ color: Colors.textMuted }}>Cancel</Text>
+                        </TouchableOpacity>
+                    </Animated.View>
+                )}
             </View>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: Colors.background,
-    },
-    content: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: Spacing.xl,
-    },
-    statusContainer: {
-        alignItems: 'center',
-        width: '100%',
-    },
-    processingIcon: {
-        marginBottom: Spacing.lg,
-    },
-    successIcon: {
-        marginBottom: Spacing.lg,
-    },
-    errorIcon: {
-        marginBottom: Spacing.lg,
-    },
-    statusTitle: {
-        fontSize: Typography.sizes.xl,
-        fontWeight: Typography.weights.bold,
-        color: Colors.text,
-        marginBottom: Spacing.sm,
-    },
-    statusText: {
-        fontSize: Typography.sizes.base,
-        color: Colors.textMuted,
-        textAlign: 'center',
-    },
-    redirectText: {
-        fontSize: Typography.sizes.sm,
-        color: Colors.textMuted,
-        marginTop: Spacing.xl,
-    },
-    detailsCard: {
-        width: '100%',
-        backgroundColor: Colors.card,
-        borderRadius: Radius.xl,
-        padding: Spacing.lg,
-        marginTop: Spacing.xl,
-    },
-    detailRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: Spacing.sm,
-    },
-    detailLabel: {
-        fontSize: Typography.sizes.sm,
-        color: Colors.textMuted,
-    },
-    detailAmount: {
-        fontSize: Typography.sizes.lg,
-        fontWeight: Typography.weights.bold,
-    },
-    detailValue: {
-        fontSize: Typography.sizes.base,
-        color: Colors.text,
-        flex: 1,
-        textAlign: 'right',
-        marginLeft: Spacing.md,
-    },
-    incomeText: {
-        color: Colors.success,
-    },
-    expenseText: {
-        color: Colors.text,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: Colors.border,
-    },
-    categoryBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: Spacing.xs,
-    },
-    categoryText: {
-        fontSize: Typography.sizes.sm,
-        fontWeight: Typography.weights.medium,
-    },
-    retryButton: {
-        marginTop: Spacing.xl,
-        backgroundColor: Colors.primary,
-        paddingVertical: Spacing.md,
-        paddingHorizontal: Spacing.xl,
-        borderRadius: Radius.lg,
-    },
-    retryButtonText: {
-        color: Colors.text,
-        fontSize: Typography.sizes.base,
-        fontWeight: Typography.weights.semibold,
-    },
-});
+

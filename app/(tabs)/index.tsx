@@ -4,7 +4,7 @@ import TransactionItem from '@/components/TransactionItem';
 import { Colors, Spacing, Typography } from '@/constants/Colors';
 import { useTransactions } from '@/hooks/useTransactions';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
@@ -24,6 +24,13 @@ export default function HomeScreen() {
   } = useTransactions();
 
   const [refreshing, setRefreshing] = React.useState(false);
+
+  // Auto-reload when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadTransactions();
+    }, [loadTransactions])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

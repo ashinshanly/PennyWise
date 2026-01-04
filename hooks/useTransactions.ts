@@ -65,7 +65,33 @@ export function useTransactions() {
             }
 
             if (storedNotifications) {
-                setNotifications(JSON.parse(storedNotifications));
+                let parsedNotifications: Notification[] = JSON.parse(storedNotifications);
+
+                // Ensure privacy message is updated or added
+                const welcomeIndex = parsedNotifications.findIndex(n => n.id === 'welcome-1');
+                const welcomeNotification: Notification = {
+                    id: 'welcome-1',
+                    title: 'Welcome to PennyWise! 🤡',
+                    message: 'Your smart automated expense tracker is ready. 🔒 Privacy First: All your data stays on this device. No servers, no cloud storage. All processing happens locally.',
+                    date: new Date().toISOString(),
+                    read: false,
+                    type: 'info'
+                };
+
+                if (welcomeIndex !== -1) {
+                    // Update existing welcome message text
+                    parsedNotifications[welcomeIndex] = {
+                        ...parsedNotifications[welcomeIndex],
+                        message: welcomeNotification.message
+                    };
+                } else {
+                    // Add if missing
+                    parsedNotifications = [welcomeNotification, ...parsedNotifications];
+                }
+
+                setNotifications(parsedNotifications);
+                // We typically don't await save here to avoid blocking load, but for data consistency let's save
+                AsyncStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(parsedNotifications));
             } else {
                 const welcomeNotification: Notification = {
                     id: 'welcome-1',

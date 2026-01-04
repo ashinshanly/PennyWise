@@ -1,5 +1,4 @@
 import { CategoryId } from '@/constants/Colors';
-import { MockTransactions } from '@/constants/MockData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -35,10 +34,7 @@ const STORAGE_KEY = '@expense_tracker_transactions';
 const ACCOUNTS_KEY = '@expense_tracker_accounts';
 const NOTIFICATIONS_KEY = '@expense_tracker_notifications';
 
-const DEFAULT_ACCOUNTS: Account[] = [
-    { id: '1', name: 'Cash', type: 'cash', initialBalance: 0, color: '#4CAF50' },
-    { id: '2', name: 'Main Bank', type: 'bank', initialBalance: 0, color: '#2196F3' },
-];
+const DEFAULT_ACCOUNTS: Account[] = [];
 
 export function useTransactions() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -57,25 +53,24 @@ export function useTransactions() {
             if (storedTransactions) {
                 setTransactions(JSON.parse(storedTransactions));
             } else {
-                setTransactions(MockTransactions);
-                await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(MockTransactions));
+                setTransactions([]);
+                await AsyncStorage.removeItem(STORAGE_KEY);
             }
 
             if (storedAccounts) {
                 setAccounts(JSON.parse(storedAccounts));
             } else {
-                setAccounts(DEFAULT_ACCOUNTS);
-                await AsyncStorage.setItem(ACCOUNTS_KEY, JSON.stringify(DEFAULT_ACCOUNTS));
+                setAccounts([]);
+                await AsyncStorage.removeItem(ACCOUNTS_KEY);
             }
 
             if (storedNotifications) {
                 setNotifications(JSON.parse(storedNotifications));
             } else {
-                // Add initial Welcome notification
                 const welcomeNotification: Notification = {
                     id: 'welcome-1',
                     title: 'Welcome to PennyWise! 🤡',
-                    message: 'Your smart automated expense tracker is ready. We hope this helps you plan your expenses better now!',
+                    message: 'Your smart automated expense tracker is ready. 🔒 Privacy First: All your data stays on this device. No servers, no cloud storage. All processing happens locally.',
                     date: new Date().toISOString(),
                     read: false,
                     type: 'info'
@@ -85,7 +80,8 @@ export function useTransactions() {
             }
         } catch (error) {
             console.error('Error loading transactions:', error);
-            setTransactions(MockTransactions);
+            console.error('Error loading transactions:', error);
+            setTransactions([]);
         } finally {
             setLoading(false);
         }

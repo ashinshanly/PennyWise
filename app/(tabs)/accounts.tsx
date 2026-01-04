@@ -218,7 +218,7 @@ export default function AccountsScreen() {
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Initial Balance</Text>
+                                <Text style={styles.label}>Current Balance</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="0.00"

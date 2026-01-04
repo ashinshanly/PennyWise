@@ -1,6 +1,6 @@
 # PennyWise
 
-A clean, dark-themed expense tracker I built for iOS using React Native (Expo). The main goal was to solve the "manual entry" fatigue by automating expense tracking from bank SMS messages, but without violating iOS privacy restrictions.
+A **Privacy-First** auto-tracking expense manager built for iOS. PennyWise solves "manual entry fatigue" by automating expense tracking and applying **smart categorization algorithms** to bank SMS messages, while ensuring **100% of your data stays on your device**. No servers, no cloud, no tracking.
 
 <p align="center">
   <img src="assets/readme-images/app_home_screen.png" width="300" alt="Home Screen" />

@@ -17,6 +17,7 @@ export const MockTransactions: Transaction[] = [
         description: 'Dinner at Restaurant',
         date: daysAgo(0).toISOString(),
         source: 'manual',
+        accountId: '2', // Main Bank
     },
     {
         id: '2',
@@ -26,6 +27,7 @@ export const MockTransactions: Transaction[] = [
         description: 'Freelance Payment',
         date: daysAgo(1).toISOString(),
         source: 'manual',
+        accountId: '2', // Main Bank
     },
     {
         id: '3',
@@ -35,6 +37,7 @@ export const MockTransactions: Transaction[] = [
         description: 'Uber rides',
         date: daysAgo(1).toISOString(),
         source: 'manual',
+        accountId: '2', // Main Bank
     },
     {
         id: '4',
@@ -44,6 +47,7 @@ export const MockTransactions: Transaction[] = [
         description: 'Amazon order',
         date: daysAgo(2).toISOString(),
         source: 'manual',
+        accountId: '2', // Main Bank
     },
     {
         id: '5',
@@ -53,6 +57,7 @@ export const MockTransactions: Transaction[] = [
         description: 'Internet bill',
         date: daysAgo(3).toISOString(),
         source: 'manual',
+        accountId: '2', // Main Bank
     },
     {
         id: '6',
@@ -62,6 +67,7 @@ export const MockTransactions: Transaction[] = [
         description: 'Netflix subscription',
         date: daysAgo(4).toISOString(),
         source: 'manual',
+        accountId: '2', // Main Bank
     },
     {
         id: '7',
@@ -71,6 +77,7 @@ export const MockTransactions: Transaction[] = [
         description: 'Salary',
         date: daysAgo(5).toISOString(),
         source: 'sms',
+        accountId: '2', // Main Bank
     },
     {
         id: '8',
@@ -80,6 +87,7 @@ export const MockTransactions: Transaction[] = [
         description: 'Doctor visit',
         date: daysAgo(6).toISOString(),
         source: 'manual',
+        accountId: '1', // Cash
     },
 ];
 

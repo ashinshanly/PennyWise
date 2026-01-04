@@ -21,8 +21,9 @@ export default function AddFromShortcutScreen() {
         amount?: string;
         desc?: string;
         type?: string;
+        bank?: string;
     }>();
-    const { addTransaction } = useTransactions();
+    const { addTransaction, accounts } = useTransactions();
 
     const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
     const [transactionDetails, setTransactionDetails] = useState<{
@@ -30,11 +31,14 @@ export default function AddFromShortcutScreen() {
         description: string;
         type: 'income' | 'expense';
         category: CategoryId;
+        accountName?: string;
     } | null>(null);
 
     useEffect(() => {
-        processTransaction();
-    }, []);
+        if (accounts.length > 0) {
+            processTransaction();
+        }
+    }, [accounts]);
 
     const processTransaction = async () => {
         try {
@@ -54,7 +58,30 @@ export default function AddFromShortcutScreen() {
             // Auto-categorize based on description
             const category = type === 'income' ? 'income' : categorizeTransaction(description);
 
-            setTransactionDetails({ amount, description, type, category });
+            // Find matching account
+            let accountId = accounts[0]?.id; // Default to first account
+            let accountName = accounts[0]?.name;
+
+            if (params.bank) {
+                const bankName = decodeURIComponent(params.bank).toLowerCase();
+                const matchedAccount = accounts.find(acc =>
+                    acc.name.toLowerCase().includes(bankName) ||
+                    bankName.includes(acc.name.toLowerCase())
+                );
+                if (matchedAccount) {
+                    accountId = matchedAccount.id;
+                    accountName = matchedAccount.name;
+                }
+            } else {
+                // Default logic if no bank param
+                const defaultAcc = accounts.find(a => a.type === 'bank') || accounts[0];
+                if (defaultAcc) {
+                    accountId = defaultAcc.id;
+                    accountName = defaultAcc.name;
+                }
+            }
+
+            setTransactionDetails({ amount, description, type, category, accountName });
 
             // Save transaction
             await addTransaction({
@@ -64,6 +91,7 @@ export default function AddFromShortcutScreen() {
                 description,
                 date: new Date().toISOString(),
                 source: 'sms',
+                accountId,
             });
 
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -122,6 +150,15 @@ export default function AddFromShortcutScreen() {
                                 <Text style={styles.detailLabel}>Description</Text>
                                 <Text style={styles.detailValue} numberOfLines={1}>
                                     {transactionDetails.description}
+                                </Text>
+                            </View>
+
+                            <View style={styles.divider} />
+
+                            <View style={styles.detailRow}>
+                                <Text style={styles.detailLabel}>Account</Text>
+                                <Text style={styles.detailValue} numberOfLines={1}>
+                                    {transactionDetails.accountName}
                                 </Text>
                             </View>
 

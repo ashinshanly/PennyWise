@@ -29,12 +29,22 @@ const categoryList = Object.values(Categories).filter(c => c.id !== 'income');
 
 export default function AddScreen() {
     const router = useRouter();
-    const { addTransaction } = useTransactions();
+    const { addTransaction, accounts } = useTransactions();
 
     const [amount, setAmount] = useState('');
     const [type, setType] = useState<'expense' | 'income'>('expense');
     const [category, setCategory] = useState<CategoryId>('food');
     const [description, setDescription] = useState('');
+    const [accountId, setAccountId] = useState<string>('');
+
+    // Set default account
+    React.useEffect(() => {
+        if (accounts.length > 0 && !accountId) {
+            // Default to 'Main Bank' or first account
+            const defaultAcc = accounts.find(a => a.type === 'bank') || accounts[0];
+            setAccountId(defaultAcc.id);
+        }
+    }, [accounts]);
 
     const buttonScale = useSharedValue(1);
 
@@ -63,6 +73,11 @@ export default function AddScreen() {
 
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+        if (!accountId) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            return;
+        }
+
         await addTransaction({
             amount: parseFloat(amount),
             type,
@@ -70,6 +85,7 @@ export default function AddScreen() {
             description: description || Categories[category].name,
             date: new Date().toISOString(),
             source: 'manual',
+            accountId,
         });
 
         // Reset form
@@ -141,6 +157,44 @@ export default function AddScreen() {
                                 Income
                             </Text>
                         </TouchableOpacity>
+                    </Animated.View>
+
+                    {/* Account Selection */}
+                    <Animated.View entering={FadeInDown.delay(150).duration(400)} style={styles.inputContainer}>
+                        <Text style={styles.sectionLabel}>Account</Text>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.categoriesContainer}
+                        >
+                            {accounts.map((acc) => (
+                                <TouchableOpacity
+                                    key={acc.id}
+                                    style={[
+                                        styles.categoryPill,
+                                        accountId === acc.id && { backgroundColor: acc.color + '30', borderColor: acc.color },
+                                    ]}
+                                    onPress={() => {
+                                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                        setAccountId(acc.id);
+                                    }}
+                                >
+                                    <Ionicons
+                                        name={acc.type === 'cash' ? 'cash' : acc.type === 'card' ? 'card' : 'business'}
+                                        size={16}
+                                        color={accountId === acc.id ? acc.color : Colors.textMuted}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.categoryText,
+                                            accountId === acc.id && { color: acc.color },
+                                        ]}
+                                    >
+                                        {acc.name}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
                     </Animated.View>
 
                     {/* Amount Display */}

@@ -126,6 +126,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="accounts"
+        options={{
+          title: 'Accounts',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? "wallet" : "wallet-outline"} color={color} focused={focused} />
+          ),
+        }}
+        listeners={{
+          tabPress: handleTabPress,
+        }}
+      />
+      <Tabs.Screen
         name="scan"
         options={{
           title: 'Scan',

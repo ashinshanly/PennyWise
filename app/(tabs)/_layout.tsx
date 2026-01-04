@@ -113,19 +113,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="analytics"
-        options={{
-          title: 'Analytics',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? "stats-chart" : "stats-chart-outline"} color={color} focused={focused} />
-          ),
-        }}
-        listeners={{
-          tabPress: handleTabPress,
-        }}
-      />
-      <Tabs.Screen
         name="accounts"
         options={{
           title: 'Accounts',
@@ -139,8 +126,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="analytics"
+        options={{
+          title: 'Analytics',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? "stats-chart" : "stats-chart-outline"} color={color} focused={focused} />
+          ),
+        }}
+        listeners={{
+          tabPress: handleTabPress,
+        }}
+      />
+      <Tabs.Screen
         name="scan"
         options={{
+          href: null,
           title: 'Scan',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (

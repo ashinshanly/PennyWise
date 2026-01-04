@@ -4,12 +4,14 @@ import TransactionItem from '@/components/TransactionItem';
 import { Colors, Spacing, Typography } from '@/constants/Colors';
 import { useTransactions } from '@/hooks/useTransactions';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const {
     transactions,
     loading,
@@ -59,9 +61,17 @@ export default function HomeScreen() {
             <Text style={styles.greeting}>Good Evening 👋</Text>
             <Text style={styles.date}>{today}</Text>
           </View>
-          <View style={styles.notificationButton}>
-            <Ionicons name="notifications-outline" size={24} color={Colors.text} />
-            <View style={styles.notificationDot} />
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => router.push('/scan')}
+            >
+              <Ionicons name="scan-outline" size={24} color={Colors.text} />
+            </TouchableOpacity>
+            <View style={styles.notificationButton}>
+              <Ionicons name="notifications-outline" size={24} color={Colors.text} />
+              <View style={styles.notificationDot} />
+            </View>
           </View>
         </Animated.View>
 
@@ -142,6 +152,19 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     fontSize: Typography.sizes.sm,
     marginTop: 2,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   notificationButton: {
     width: 44,
